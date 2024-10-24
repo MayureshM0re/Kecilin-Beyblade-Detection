@@ -76,7 +76,12 @@ Below I have uploaded a screenshot after training the dataset,I trained in 60 ep
 
 ![Screenshot (37)](https://github.com/user-attachments/assets/15dc734b-670f-46d9-a43e-3fed0d34f087)
 
-After training my model on the dataset I got a mAP50 OF 0.998 and Precision and Recall for all three Beyblades very high Recall is 100 percent for all three beyblades. precision is also 0.999 for all three Beyblades.
+After training my model I got mAP50: Mean Average Precision at an IoU threshold of 0.5 (a common metric for object detection accuracy) The mAP50 is 100% (or 1.000) for the "all" class, which indicates perfect accuracy in object detection at the IoU 0.5 threshold.
+
+mAP50-95 values for these classes are 0.755, 0.761, and 0.712 respectively, indicating that Beyblade 2 has the best detection performance, while Beyblade 3 is slightly less accurate but still performs well.
+
+The mAP50-95 is 0.756 overall, meaning the model is reasonably accurate across a range of IoU thresholds. This is a very good score for object detection models.
+
 
 ---
 
