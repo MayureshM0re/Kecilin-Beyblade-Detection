@@ -141,6 +141,8 @@ displacement: Movement of the Beyblade (based on the motion of the center).
 
 estimates_remaining_time_function  : This is a placeholder function to estimate how long the remaining Beyblade would keep spinning.
 
+---
+
 
 4) Main loop for for video processing and running YOLO detections
 
@@ -149,6 +151,8 @@ estimates_remaining_time_function  : This is a placeholder function to estimate 
 Video Capture: Captures each frame and resizes it to 640x360 for processing.
 YOLO Model: Runs inference to detect Beyblades, returning bounding boxes (bbox) and their classes (Beyblade 1 and Beyblade 2).
 Not considering Beyblade 3 here cause it is stationary in this video and it is not present in battle fight.
+
+---
 
 
 5) Track motion using optical flow , Detect when a Beyblade stops
@@ -159,9 +163,18 @@ Not considering Beyblade 3 here cause it is stationary in this video and it is n
    For each detected Beyblade, it calculates the displacement between frames and tracks the motion over a window of 30 frames.
    If the average motion in the last 30 frames falls below the threshold, the Beyblade is considered stopped.
 
+   ---
 
-6) 
 
+6) Declaring the winner displaying.
+
+   
+
+
+![6](https://github.com/user-attachments/assets/38214656-8827-43e3-9f38-a54d8253891b)
+
+When one Beyblade stops, the other is declared the winner, and the results are saved (screenshots and CSV entries).
+The annotated frame is displayed in a window, and pressing 'q' allows the user to exit the video early.
 
 
 
