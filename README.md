@@ -34,7 +34,7 @@ https://drive.google.com/drive/folders/1g14tHUODm5rmkSqffTSxPQVYf0OJ5lf7?usp=dri
       
 https://drive.google.com/file/d/1s-WQNkZxArbUQHtiqw-n0FsetnbQ3Wj1/view?usp=drive_link
       
-      3) Video demo/output =
+      3) Video demo/output and Screenshot Output also added which shows when the game has stopped, and because of what reason =
        
 https://drive.google.com/file/d/1lz71sdbi5xgjmyM4bNwqUhebbytOrelU/view?usp=drive_link
 
