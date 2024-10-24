@@ -106,7 +106,18 @@ cv2.VideoCapture(): Opens the video file for frame-by-frame processing.
 
 os.makedirs(output_dir): Checks if the directory for saving images exists. If not, it creates it.
 
+2) Optical flow initialization and variables, CSV setup :
 
-       
+
+
+
+       ![2](https://github.com/user-attachments/assets/3a7486ed-d9b5-4994-82ba-42ac33b4e3d0)
+
+Optical Flow: Used to track the movement of Beyblades by calculating the motion between frames.
+Motion Threshold: If the motion falls below this threshold, the Beyblade is considered stopped.
+Tracking Window: This specifies how many previous frames are considered to determine motion.
+
+CSV File: This stores battle results, including the total spin duration, the winner, and the remaining spin duration of the winning Beyblade.
+
 
 
