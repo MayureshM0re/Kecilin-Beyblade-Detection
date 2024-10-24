@@ -89,4 +89,24 @@ The mAP50-95 is 0.756 overall, meaning the model is reasonably accurate across a
 
 ---
 
+1) Imports and setup, YOLO model and video capture , and Output Directory :
+
+
+![1](https://github.com/user-attachments/assets/cab0b3d2-cca1-4836-aa42-28898e4b550e)
+
+cv2 (OpenCV): Used for video processing, reading frames, optical flow calculation, and saving images.
+numpy (np): Used for numerical operations (e.g., calculating motion).
+YOLO (ultralytics): YOLOv8 model from the Ultralytics library for detecting Beyblades.
+os: For handling file paths and directories.
+csv: To store results in a CSV file.
+time: Used for tracking the duration of the battle.
+
+YOLO('best.pt'): Loads the YOLO model (replace 'best.pt' with the actual model path). This model is trained to detect Beyblades.
+cv2.VideoCapture(): Opens the video file for frame-by-frame processing.
+
+os.makedirs(output_dir): Checks if the directory for saving images exists. If not, it creates it.
+
+
+       
+
 
