@@ -106,6 +106,8 @@ cv2.VideoCapture(): Opens the video file for frame-by-frame processing.
 
 os.makedirs(output_dir): Checks if the directory for saving images exists. If not, it creates it.
 
+---
+
 2) Optical flow initialization and variables, CSV setup :
 
 ![2](https://github.com/user-attachments/assets/8986cf67-0891-4565-b467-9ca5516f348e)
@@ -118,8 +120,55 @@ Tracking Window: This specifies how many previous frames are considered to deter
 
 CSV File: This stores battle results, including the total spin duration, the winner, and the remaining spin duration of the winning Beyblade.
 
+---
+
 
 3) Helper functions, optical flow calculation, estimate the remaining spin duration :
+
+
+![3](https://github.com/user-attachments/assets/ca1bfbe1-9697-41d4-99ae-82cf1ff49fb7)
+
+
+
+the helper function def_beyblade_image Saves the image of the Beyblade (winner or loser) when it's detected.
+
+next fucntion  calculates optical flow 
+
+Optical Flow: This calculates the motion of the Beyblade based on its position in the previous and current frame.
+p0: Center of the bounding box.
+p1: Position of the center in the next frame.
+displacement: Movement of the Beyblade (based on the motion of the center).
+
+estimates_remaining_time_function  : This is a placeholder function to estimate how long the remaining Beyblade would keep spinning.
+
+
+4) Main loop for for video processing and running YOLO detections
+
+![4](https://github.com/user-attachments/assets/816f0488-dc32-4579-9f71-7cc1fca3e530)
+
+Video Capture: Captures each frame and resizes it to 640x360 for processing.
+YOLO Model: Runs inference to detect Beyblades, returning bounding boxes (bbox) and their classes (Beyblade 1 and Beyblade 2).
+Not considering Beyblade 3 here cause it is stationary in this video and it is not present in battle fight.
+
+
+5) Track motion using optical flow , Detect when a Beyblade stops
+
+   ![5](https://github.com/user-attachments/assets/bb0f7d2e-60b2-4ebe-ac5e-d0473852691e)
+
+
+   For each detected Beyblade, it calculates the displacement between frames and tracks the motion over a window of 30 frames.
+   If the average motion in the last 30 frames falls below the threshold, the Beyblade is considered stopped.
+
+
+6) 
+
+
+
+
+   
+
+
+   
 
 
 
