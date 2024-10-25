@@ -14,7 +14,7 @@ Pre-requisites to run the code :
       
       4) pip install opencv-python
       
-      5) pip install pandas
+      5) pip install numpy
       
 Optional Pre-requsites (if you wish to train the datasets on your GPU):
 
