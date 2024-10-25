@@ -108,7 +108,6 @@ Establishes dictionaries for position and stop frame tracking
 2)  :
 
 
-
 ![2](https://github.com/user-attachments/assets/39936b49-33cf-4d03-9681-117605f27485)
 
 
@@ -118,7 +117,6 @@ Computes the Euclidean distance between current and previous positions
 Returns infinity for first detection to prevent false stops
 Uses the Pythagorean theorem to calculate actual pixel distance moved
 
-
 The second function handles battle result storage:
 
 Creates/appends to a CSV file
@@ -127,7 +125,6 @@ Formats durations in MM:SS format
 Stores battle duration, winner, end reason, and winner's spin duration
 
 ---
-
 
 3) 
    
@@ -222,19 +219,37 @@ Prevents false stops from momentary pauses
 
 ---
 
-
 5) 
 
+![5](https://github.com/user-attachments/assets/948d3dd1-a666-495c-83ab-22d6cc2d64b2)
 
+Check for Battle End
+This block detects when the battle has ended based on beyblade inactivity:
 
+Loop through Beyblades: For each beyblade ('Beyblade 1' and 'Beyblade 2'), the code checks if self.stop_frames[beyblade] has reached or exceeded self.STOP_THRESHOLD, meaning the beyblade has stopped spinning for a specific number of frames.
+End Battle Trigger: If any beyblade meets this stop condition:
+self.battle_ended is set to True, and self.battle_end_frame records the current frame count, marking the end.
+self.stopped_beyblade stores which beyblade stopped, and self.winner is set to the other beyblade (the one still spinning).
+The reason for the battle’s end (self.battle_end_reason) is set to indicate that the stopped beyblade "stopped spinning."
+End Notification: A message is printed to confirm the battle end and display the timestamp.
 
+Track Winner’s Remaining Spin After Battle Ends
+This block measures how long the winning beyblade continues to spin after the other has stopped.
 
-
+Check for Battle End: If self.battle_ended is True, the winner exists (self.winner is not None), and the winner's final duration (self.winner_final_duration) hasn’t been recorded, the code performs additional checks.
+Track Remaining Spin:
+If the winning beyblade is still detected in detected_beyblades, it calculates winner_duration, which is the time in seconds since the other beyblade stopped.
+If the winner is no longer detected (likely removed from the frame), it records the winner_final_duration as the last calculated remaining spin duration and calculates the battle_duration.
+Save Results: Finally, the save_results function is called to store the battle’s details, including:
+Total battle_duration
+The winner beyblade
+The battle_end_reason (e.g., one beyblade stopping)
+The winner_final_duration (remaining spin time of the winner after the battle ended)
 
    ---
 
 
-6) Declaring the winner displaying.
+6) 
 
    
 
