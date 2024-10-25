@@ -129,7 +129,7 @@ Stores battle duration, winner, end reason, and winner's spin duration
 ---
 
 
-3) Helper functions, optical flow calculation, estimate the remaining spin duration :
+3) 
    
 ![3](https://github.com/user-attachments/assets/ece7c803-bf9e-43fa-a01e-af12172b81cb)
 
@@ -149,27 +149,87 @@ Bounding box coordinates are extracted
 Center point is calculated as the average of box corners
 Position is stored in current_positions dictionary
 
+Over here I have opted for an algorithm, the algorithm uses the center point (centroid) of each detected object’s bounding box in each frame to estimate and track movement. Tracking is accomplished by:
+
+Calculating each detected beyblade’s center in the frame.
+Storing these centers over consecutive frames to observe motion or lack thereof.
+
 ---
 
 
 4) 
 
+![4](https://github.com/user-attachments/assets/eb465fa8-d21f-4bfe-ac9d-232e27d17747)
+
+The tracking process follows these steps:
+
+Position Comparison
+
+Gets current position from YOLO detection
+Compares with previous position
+Calculates Euclidean distance between points
 
 
-Video Capture: Captures each frame and resizes it to 640x360 for processing.
-YOLO Model: Runs inference to detect Beyblades, returning bounding boxes (bbox) and their classes (Beyblade 1 and Beyblade 2).
-Not considering Beyblade 3 here cause it is stationary in this video and it is not present in battle fight.
+Movement Detection
+
+If movement < MOVEMENT_THRESHOLD (5 pixels):
+
+Increment stop_frames counter
+
+
+If movement ≥ MOVEMENT_THRESHOLD:
+
+Reset stop_frames counter to 0
+
+
+Update previous position for next frame
+
+
+Stop Detection
+
+If stop_frames reaches STOP_THRESHOLD (15 frames):
+
+Beyblade is considered stopped
+Battle end is triggered
+
+The Euclidean distance formula is used:  distance = √[(x₂-x₁)² + (y₂-y₁)²]          
+Where:
+(x₁,y₁) is the previous position
+(x₂,y₂) is the current position
+Thresholds Explained
+
+MOVEMENT_THRESHOLD = 5
+
+Minimum pixel distance to consider real movement
+Helps filter out:
+
+Camera noise
+Detection jitter
+Small vibrations
+
+
+Values less than 5 pixels are considered stationary
+
+
+STOP_THRESHOLD = 15
+
+Number of consecutive low-movement frames
+Must be reached to declare a Beyblade stopped
+At 30 FPS video:
+
+15 frames = 0.5 seconds
+Prevents false stops from momentary pauses
 
 ---
 
 
-5) Track motion using optical flow , Detect when a Beyblade stops
-
-   ![5](https://github.com/user-attachments/assets/bb0f7d2e-60b2-4ebe-ac5e-d0473852691e)
+5) 
 
 
-   For each detected Beyblade, it calculates the displacement between frames and tracks the motion over a window of 30 frames.
-   If the average motion in the last 30 frames falls below the threshold, the Beyblade is considered stopped.
+
+
+
+
 
    ---
 
@@ -179,10 +239,6 @@ Not considering Beyblade 3 here cause it is stationary in this video and it is n
    
 
 
-![6](https://github.com/user-attachments/assets/38214656-8827-43e3-9f38-a54d8253891b)
-
-When one Beyblade stops, the other is declared the winner, and the results are saved (screenshots and CSV entries).
-The annotated frame is displayed in a window, and pressing 'q' allows the user to exit the video early.
 
 
 
