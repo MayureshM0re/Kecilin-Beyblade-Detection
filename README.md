@@ -48,9 +48,10 @@ Instructions to run my code :
 
 Instructions for the outputs :
 
-      1) video output.mp4 = it is the output video which demonstrates that persons are getting detected with the help of best.pt model and user creating an region of interest (ROI) and getting alerts .
+      1) battle_analysis.mp4 = it is the output video that demonstrates that Beyblades are getting detected with the help of best.pt model, duration of batlle between , winner of Beybalde battle and the reason 
+         for winnign the battle.
       
-      2) battle_results.csv = it is a CSV file it contains Total spin duration ( ins seoncds ) of the battle, Winner name, Remainign spin duration in seconds 
+      2) battle_results.csv = It is a CSV file that contains Battle duration ( ins seconds ), Winner name, Battle end reason
       
       3) best.pt = the best.pt is the trained model 
 
