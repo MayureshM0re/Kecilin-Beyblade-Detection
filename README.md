@@ -86,7 +86,7 @@ The mAP50-95 is 0.756 overall, meaning the model is reasonably accurate across a
 
 ---
 
-3) ###Code Logic walkthrough### :
+3) # Code Logic walkthroug :
 
 ---
 
