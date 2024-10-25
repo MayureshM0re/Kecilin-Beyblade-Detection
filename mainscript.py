@@ -1,166 +1,248 @@
+from ultralytics import YOLO
 import cv2
 import numpy as np
-from ultralytics import YOLO
-import os
 import csv
-import time
 
-# Load the YOLO model for detecting Beyblades
-model = YOLO('best.pt')  # Update with your correct model path
+class BeybladeBattleTracker:
+    def __init__(self, model_path='best.pt', video_path='Beybladefight.mp4'):
+        self.model = YOLO(model_path)
+        self.video_path = video_path
+        
+        # States for battle tracking
+        self.battle_started = False
+        self.battle_start_frame = None
+        self.battle_ended = False
+        self.battle_end_frame = None
+        self.battle_end_reason = None
+        self.stopped_beyblade = None
+        
+        # Winner tracking
+        self.winner = None
+        self.winner_stop_frame = None
+        self.winner_final_duration = None
+        
+        # Movement tracking
+        self.prev_positions = {'Beyblade 1': None, 'Beyblade 2': None}
+        self.stop_frames = {'Beyblade 1': 0, 'Beyblade 2': 0}
+        self.STOP_THRESHOLD = 15
+        self.MOVEMENT_THRESHOLD = 5
+        
+        # Colors for visualization
+        self.COLORS = {
+            'text': (139, 0, 0),
+            'box_active': (255, 0, 0),
+            'box_static': (0, 0, 255),
+            'winner_text': (0, 0, 255)
+        }
+        
+        # Results storage
+        self.csv_file = 'battle_results.csv'
 
-# Open the video file
-cap = cv2.VideoCapture('C:/Beyblade/Beybladefight.mp4')
-
-# Directory to save winner and loser images
-output_dir = 'C:/Beyblade/output/'
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
-
-# Initialize parameters for Optical Flow
-prev_gray = None
-beyblade_1_motion = []
-beyblade_2_motion = []
-motion_threshold = 0.3  # Threshold to consider motion as stopped
-tracking_window_size = 30  # Number of frames to track motion
-
-# Variables to track stopped status
-beyblade_1_stopped = False
-beyblade_2_stopped = False
-game_over = False
-saved_screenshot = False
-
-# Variables to track spin duration
-battle_start_time = time.time()  # Start the timer at the beginning
-remaining_spin_duration = 0.0  # Remaining spin duration of the winning beyblade
-
-# CSV file path for saving results
-csv_file_path = 'C:/Beyblade/battle_results.csv'
-
-# Write CSV header if file doesn't exist
-if not os.path.isfile(csv_file_path):
-    with open(csv_file_path, mode='w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(['Total Spin Duration (seconds)', 'Winner', 'Remaining Spin Duration (seconds)'])
-
-# Function to save the screenshot of the winner and loser
-def save_beyblade_image(frame, label, bbox, filename):
-    x1, y1, x2, y2 = bbox
-    cropped_beyblade = frame[int(y1):int(y2), int(x1):int(x2)]
-    output_path = os.path.join(output_dir, filename)
-    cv2.imwrite(output_path, cropped_beyblade)
-    print(f'{label} image saved as {filename}')
-
-# Function to calculate optical flow and determine if a Beyblade has stopped
-def calculate_optical_flow(prev_gray, gray, bbox):
-    p0 = np.array([[((bbox[0] + bbox[2]) / 2), ((bbox[1] + bbox[3]) / 2)]], dtype=np.float32)  # Center point
-    p1, st, err = cv2.calcOpticalFlowPyrLK(prev_gray, gray, p0, None)
+    def seconds_to_minsec(self, seconds):
+        """Convert decimal seconds to 'MM:SS.xx' format"""
+        minutes = int(seconds // 60)
+        remaining_seconds = seconds % 60
+        return f"{minutes:02d}:{remaining_seconds:05.2f}"
+        
+    def calculate_movement(self, current_pos, previous_pos):
+        if previous_pos is None:
+            return float('inf')
+        return np.sqrt((current_pos[0] - previous_pos[0])**2 + 
+                      (current_pos[1] - previous_pos[1])**2)
     
-    # Calculate displacement (motion) between two frames
-    if p1 is not None and st[0] == 1:
-        displacement = np.linalg.norm(p1 - p0)
-        return displacement
-    return 0.0
+    def save_results(self, battle_duration, winner, end_reason, winner_spin_duration=None):
+        """Save battle results to CSV with formatted time"""
+        with open(self.csv_file, 'a', newline='') as file:
+            writer = csv.writer(file)
+            if file.tell() == 0:
+                writer.writerow(['Battle Duration (MM:SS)', 'Winner', 'End Reason', 'Winner Spin Duration (MM:SS)'])
+            
+            # Format durations as MM:SS
+            battle_duration_fmt = self.seconds_to_minsec(battle_duration)
+            winner_spin_fmt = self.seconds_to_minsec(winner_spin_duration) if winner_spin_duration is not None else 'N/A'
+            
+            writer.writerow([battle_duration_fmt, winner, end_reason, winner_spin_fmt])
 
-# Function to estimate remaining spin duration (customize based on your logic)
-def estimated_remaining_time_function():
-    # Example estimation logic (replace with your own)
-    average_spin_duration = 5  # Assume an average of 5 seconds remaining
-    return average_spin_duration
+    def resize_frame(self, frame, target_width=1280):
+        height, width = frame.shape[:2]
+        aspect = width / height
+        target_height = int(target_width / aspect)
+        return cv2.resize(frame, (target_width, target_height))
+    
+    def analyze_battle(self):
+        cap = cv2.VideoCapture(self.video_path)
+        if not cap.isOpened():
+            print(f"Error: Couldn't open video: {self.video_path}")
+            return
+        
+        fps = int(cap.get(cv2.CAP_PROP_FPS))
+        frame_count = 0
+        
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        out = cv2.VideoWriter(
+            'battle_analysis.mp4',
+            cv2.VideoWriter_fourcc(*'mp4v'),
+            fps,
+            (width, height)
+        )
+        
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                if self.battle_ended and self.winner and self.winner_final_duration is None:
+                    self.winner_final_duration = (frame_count - self.battle_end_frame) / fps
+                    self.save_results(
+                        (self.battle_end_frame - self.battle_start_frame) / fps,
+                        self.winner,
+                        self.battle_end_reason,
+                        self.winner_final_duration
+                    )
+                break
+            
+            frame_count += 1
+            current_time = frame_count / fps
+            
+            output_frame = frame.copy()
+            results = self.model(frame, conf=0.3)
+            
+            detected_beyblades = set()
+            current_positions = {}
+            
+            # Process detections
+            for result in results[0]:
+                boxes = result.boxes
+                for box in boxes:
+                    x1, y1, x2, y2 = map(int, box.xyxy[0])
+                    confidence = float(box.conf)
+                    class_id = int(box.cls)
+                    class_name = result.names[class_id]
+                    
+                    center_x = (x1 + x2) // 2
+                    center_y = (y1 + y2) // 2
+                    current_positions[class_name] = (center_x, center_y)
+                    detected_beyblades.add(class_name)
+                    
+                    color = self.COLORS['box_active'] if class_name != 'Beyblade 3' else self.COLORS['box_static']
+                    cv2.rectangle(output_frame, (x1, y1), (x2, y2), color, 2)
+                    
+                    label = f'{class_name} ({confidence:.2f})'
+                    cv2.putText(output_frame, label,
+                              (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                              1.0, color, 3)
+            
+            # Battle start detection
+            if not self.battle_started and len(detected_beyblades) >= 2 and \
+               'Beyblade 1' in detected_beyblades and 'Beyblade 2' in detected_beyblades:
+                self.battle_started = True
+                self.battle_start_frame = frame_count
+                print(f"Battle Started at {self.seconds_to_minsec(current_time)}!")
+            
+            # Battle tracking
+            if self.battle_started and not self.battle_ended:
+                for beyblade in ['Beyblade 1', 'Beyblade 2']:
+                    if beyblade in current_positions:
+                        movement = self.calculate_movement(
+                            current_positions[beyblade],
+                            self.prev_positions[beyblade]
+                        )
+                        
+                        if movement < self.MOVEMENT_THRESHOLD:
+                            self.stop_frames[beyblade] += 1
+                        else:
+                            self.stop_frames[beyblade] = 0
+                        
+                        self.prev_positions[beyblade] = current_positions[beyblade]
+                
+                # Check for battle end
+                for beyblade in ['Beyblade 1', 'Beyblade 2']:
+                    if self.stop_frames[beyblade] >= self.STOP_THRESHOLD:
+                        self.battle_ended = True
+                        self.battle_end_frame = frame_count
+                        self.stopped_beyblade = beyblade
+                        self.winner = 'Beyblade 2' if beyblade == 'Beyblade 1' else 'Beyblade 1'
+                        self.battle_end_reason = f"{self.stopped_beyblade} stopped spinning"
+                        print(f"Battle ended at {self.seconds_to_minsec(current_time)}!")
+                        
+            # Track winner's remaining spin after battle ends
+            if self.battle_ended and self.winner and self.winner_final_duration is None:
+                if self.winner in detected_beyblades:
+                    winner_duration = (frame_count - self.battle_end_frame) / fps
+                else:
+                    # Winner is no longer detected (picked up or out of frame)
+                    self.winner_final_duration = (frame_count - self.battle_end_frame) / fps
+                    battle_duration = (self.battle_end_frame - self.battle_start_frame) / fps
+                    self.save_results(
+                        battle_duration,
+                        self.winner,
+                        self.battle_end_reason,
+                        self.winner_final_duration
+                    )
+            
+            # Display information on frame
+            if self.battle_start_frame:
+                if not self.battle_ended:
+                    current_duration = (frame_count - self.battle_start_frame) / fps
+                    duration_text = f'Battle Duration: {self.seconds_to_minsec(current_duration)}'
+                else:
+                    battle_duration = (self.battle_end_frame - self.battle_start_frame) / fps
+                    duration_text = f'Battle Duration: {self.seconds_to_minsec(battle_duration)}'
+                cv2.putText(output_frame, duration_text,
+                          (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, self.COLORS['text'], 2)
+            
+            # Add battle status
+            status = "Battle Not Started"
+            if self.battle_started:
+                if self.battle_ended:
+                    status = f"Battle Ended - {self.battle_end_reason}"
+                else:
+                    status = "Battle In Progress"
+            cv2.putText(output_frame, f'Status: {status}',
+                       (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, self.COLORS['text'], 2)
+            
+            # Display winner and remaining spin duration
+            if self.battle_ended and self.winner:
+                winner_text = f'Winner: {self.winner}'
+                
+                if self.winner_final_duration is not None:
+                    spin_duration = self.winner_final_duration
+                    spin_text = f'Winner Spin After Battle: {self.seconds_to_minsec(spin_duration)}'
+                else:
+                    current_spin = (frame_count - self.battle_end_frame) / fps
+                    spin_text = f'Winner Current Spin After Battle: {self.seconds_to_minsec(current_spin)}'
+                
+                text_size = cv2.getTextSize(winner_text, cv2.FONT_HERSHEY_SIMPLEX, 2, 3)[0]
+                text_x = width//2 - text_size[0]//2
+                text_y = height//2
+                
+                cv2.rectangle(output_frame, 
+                            (text_x - 10, text_y - text_size[1] - 10),
+                            (text_x + text_size[0] + 10, text_y + 10),
+                            (255, 255, 255), -1)
+                
+                cv2.putText(output_frame, winner_text,
+                          (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 
+                          2, self.COLORS['winner_text'], 3)
+                
+                cv2.putText(output_frame, spin_text,
+                          (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 
+                          1, self.COLORS['text'], 2)
+            
+            out.write(output_frame)
+            
+            display_frame = self.resize_frame(output_frame)
+            cv2.imshow('Beyblade Battle Analysis', display_frame)
+            
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+        
+        cap.release()
+        out.release()
+        cv2.destroyAllWindows()
 
-# Main loop for video processing
-while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        break
-
-    # Resize the frame to avoid zoom-in issue (keeping original resolution)
-    frame = cv2.resize(frame, (640, 360))
-
-    # Convert frame to grayscale for optical flow
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-    # Perform inference on the current frame using YOLO model
-    results = model(frame)
-    annotated_frame = results[0].plot()
-
-    # Extract detections (bounding boxes)
-    beyblade_1_bbox = None
-    beyblade_2_bbox = None
-
-    for detection in results[0].boxes.data:
-        # Move the bounding box tensor to CPU before processing
-        detection = detection.cpu().numpy()
-        x1, y1, x2, y2, conf, cls = detection
-        bbox = (x1, y1, x2, y2)
-
-        # Track Beyblade 1 and Beyblade 2 based on their class IDs
-        if cls == 0:  # Assuming class 0 is Beyblade 1
-            beyblade_1_bbox = bbox
-        elif cls == 1:  # Assuming class 1 is Beyblade 2
-            beyblade_2_bbox = bbox
-
-    # Track motion using Optical Flow for Beyblade 1
-    if prev_gray is not None and beyblade_1_bbox is not None:
-        motion_1 = calculate_optical_flow(prev_gray, gray, beyblade_1_bbox)
-        beyblade_1_motion.append(motion_1)
-        if len(beyblade_1_motion) > tracking_window_size:
-            beyblade_1_motion.pop(0)
-
-    # Track motion using Optical Flow for Beyblade 2
-    if prev_gray is not None and beyblade_2_bbox is not None:
-        motion_2 = calculate_optical_flow(prev_gray, gray, beyblade_2_bbox)
-        beyblade_2_motion.append(motion_2)
-        if len(beyblade_2_motion) > tracking_window_size:
-            beyblade_2_motion.pop(0)
-
-    # Update previous frame
-    prev_gray = gray
-
-    # Determine if either Beyblade has stopped
-    if not game_over:
-        if np.mean(beyblade_1_motion[-tracking_window_size:]) < motion_threshold and not beyblade_1_stopped:
-            beyblade_1_stopped = True
-            print("Beyblade 1 has stopped!")
-        if np.mean(beyblade_2_motion[-tracking_window_size:]) < motion_threshold and not beyblade_2_stopped:
-            beyblade_2_stopped = True
-            print("Beyblade 2 has stopped!")
-
-        # Declare the winner once one Beyblade has stopped
-        if beyblade_1_stopped and not beyblade_2_stopped and not saved_screenshot:
-            total_spin_duration = time.time() - battle_start_time
-            remaining_spin_duration = max(0, estimated_remaining_time_function())  # Estimate remaining duration
-            print("Beyblade 2 WINS!")
-            save_beyblade_image(frame, "Winner (Beyblade 2)", beyblade_2_bbox, "Beyblade_2_winner.png")
-            save_beyblade_image(frame, "Loser (Beyblade 1)", beyblade_1_bbox, "Beyblade_1_loser.png")
-            # Save results to CSV
-            with open(csv_file_path, mode='a', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow([total_spin_duration, "Beyblade 2", remaining_spin_duration])
-            game_over = True
-            saved_screenshot = True
-        elif beyblade_2_stopped and not beyblade_1_stopped and not saved_screenshot:
-            total_spin_duration = time.time() - battle_start_time
-            remaining_spin_duration = max(0, estimated_remaining_time_function())  # Estimate remaining duration
-            print("Beyblade 1 WINS!")
-            save_beyblade_image(frame, "Winner (Beyblade 1)", beyblade_1_bbox, "Beyblade_1_winner.png")
-            save_beyblade_image(frame, "Loser (Beyblade 2)", beyblade_2_bbox, "Beyblade_2_loser.png")
-            # Save results to CSV
-            with open(csv_file_path, mode='a', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow([total_spin_duration, "Beyblade 1", remaining_spin_duration])
-            game_over = True
-            saved_screenshot = True
-        elif beyblade_1_stopped and beyblade_2_stopped:
-            print("DRAW!")
-            game_over = True
-
-    # Display the frame with annotations
-    cv2.imshow('Detections', annotated_frame)
-
-    # Press 'q' to exit the video early
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-# Release resources
-cap.release()
-cv2.destroyAllWindows()
+if __name__ == "__main__":
+    tracker = BeybladeBattleTracker(
+        model_path='best.pt',
+        video_path='Beybladefight.mp4'
+    )
+    tracker.analyze_battle()
