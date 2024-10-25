@@ -57,14 +57,14 @@ Instructions for the outputs :
 
 ---
 
-1) Collect Data :
+## 1) Collect Data :
 
   1.  To acquire the data I cut a specific time stamp video from a YouTube video https://www.youtube.com/watch?v=HlG29zJmodM, time stamp 06.40 to 07.15, after that  I wrote a Python script with its file name 
    image_extract.py, in this script, I wrote code in such a way that it extracted 120 frames from the video file which I extracted from the downloaded YouTube video. Then I took these 120 images and manually labelled them from Makesens.ai website and covnerted them in YOLO format that is the .txt format and then I arranged the dataset in train and val folders
 
 ---
 
-2) Train data :
+## 2) Train data :
 
    1.  To train the data we need to create a data.yaml file in it we need to give 'NC' number of classes over here there are 3 classes Beyblade 1 Beyblade 2 Beyblade 3 and thier names
 
@@ -86,11 +86,11 @@ The mAP50-95 is 0.756 overall, meaning the model is reasonably accurate across a
 
 ---
 
-3) # Code Logic walkthroug :
+ # Code Logic walkthrough :
 
 ---
 
-1) :
+## 1) :
 
 ![1](https://github.com/user-attachments/assets/1cf3f0e7-18cf-4318-9ad8-31827dd3459b)
 
@@ -105,7 +105,7 @@ Establishes dictionaries for position and stop frame tracking
 
 ---
 
-2)  :
+## 2)  :
 
 
 ![2](https://github.com/user-attachments/assets/39936b49-33cf-4d03-9681-117605f27485)
@@ -126,7 +126,7 @@ Stores battle duration, winner, end reason, and winner's spin duration
 
 ---
 
-3) 
+## 3) 
    
 ![3](https://github.com/user-attachments/assets/ece7c803-bf9e-43fa-a01e-af12172b81cb)
 
@@ -154,7 +154,7 @@ Storing these centers over consecutive frames to observe motion or lack thereof.
 ---
 
 
-4) 
+## 4) 
 
 ![4](https://github.com/user-attachments/assets/eb465fa8-d21f-4bfe-ac9d-232e27d17747)
 
@@ -219,7 +219,7 @@ Prevents false stops from momentary pauses
 
 ---
 
-5) 
+## 5) 
 
 ![5](https://github.com/user-attachments/assets/948d3dd1-a666-495c-83ab-22d6cc2d64b2)
 
@@ -249,7 +249,7 @@ The winner_final_duration (remaining spin time of the winner after the battle en
    ---
 
 
-6) 
+## 6) 
 
 
 ![6](https://github.com/user-attachments/assets/9fda383a-fb93-4cc9-8041-0c85c883ef1d)
@@ -269,7 +269,7 @@ This overlay provides real-time feedback on the battle’s state for easy visual
 This ensures that each frame of the video contains an updated message about the battle's current status.
 
 ---
-7)
+## 7)
 
 
 ![7](https://github.com/user-attachments/assets/21412e36-5aa3-466f-8b75-937bc53a4863)
