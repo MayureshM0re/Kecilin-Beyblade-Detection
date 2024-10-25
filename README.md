@@ -24,19 +24,25 @@ Optional Pre-requsites (if you wish to train the datasets on your GPU):
 
 
 
-Google Drive Links to dataset for training, video for script and video output (demo) :
+Google Drive Link to Output Video please watch the output  first before running the code to have a better understanding :
 
-      1) Dataset = 
+ ### 1) Output Video =
+      
+https://drive.google.com/file/d/1Ztcj2DGx0dk14RJ7GCmnFF1Gs9pe2ITp/view?usp=drive_link
+
+Google Drive link to the original video :
+
+### 2) Original Video = 
+      
+https://drive.google.com/file/d/1s-WQNkZxArbUQHtiqw-n0FsetnbQ3Wj1/view?usp=drive_link
+
+Google drive link to all the datasets :
+
+### 3) Dataset = 
       
 https://drive.google.com/drive/folders/1g14tHUODm5rmkSqffTSxPQVYf0OJ5lf7?usp=drive_link
       
-      2) Original Video = 
-      
-https://drive.google.com/file/d/1s-WQNkZxArbUQHtiqw-n0FsetnbQ3Wj1/view?usp=drive_link
-      
-      3) Output Video =
-      
-https://drive.google.com/file/d/1Ztcj2DGx0dk14RJ7GCmnFF1Gs9pe2ITp/view?usp=drive_link
+     
 
 ---
 
