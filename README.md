@@ -130,29 +130,31 @@ Stores battle duration, winner, end reason, and winner's spin duration
 
 
 3) Helper functions, optical flow calculation, estimate the remaining spin duration :
+   
+![3](https://github.com/user-attachments/assets/ece7c803-bf9e-43fa-a01e-af12172b81cb)
 
 
+YOLO detection processing:
 
+Extracts bounding box coordinates for each detected Beyblade
+Calculates center points for movement tracking
+Records detection confidence and class information
+Draws colored bounding boxes around detected Beyblades
+Maintains list of currently detected Beyblades
 
+For each frame:
 
-
-the helper function def_beyblade_image Saves the image of the Beyblade (winner or loser) when it's detected.
-
-next fucntion  calculates optical flow 
-
-Optical Flow: This calculates the motion of the Beyblade based on its position in the previous and current frame.
-p0: Center of the bounding box.
-p1: Position of the center in the next frame.
-displacement: Movement of the Beyblade (based on the motion of the center).
-
-estimates_remaining_time_function  : This is a placeholder function to estimate how long the remaining Beyblade would keep spinning.
+YOLO model detects Beyblades
+Bounding box coordinates are extracted
+Center point is calculated as the average of box corners
+Position is stored in current_positions dictionary
 
 ---
 
 
-4) Main loop for for video processing and running YOLO detections
+4) 
 
-![4](https://github.com/user-attachments/assets/816f0488-dc32-4579-9f71-7cc1fca3e530)
+
 
 Video Capture: Captures each frame and resizes it to 640x360 for processing.
 YOLO Model: Runs inference to detect Beyblades, returning bounding boxes (bbox) and their classes (Beyblade 1 and Beyblade 2).
