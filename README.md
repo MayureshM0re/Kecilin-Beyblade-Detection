@@ -86,40 +86,45 @@ The mAP50-95 is 0.756 overall, meaning the model is reasonably accurate across a
 
 ---
 
-3) Code Logic walkthrough :
+3) ###Code Logic walkthrough :
 
 ---
 
-1) Imports and setup, YOLO model and video capture , and Output Directory :
+1) :
+
+![1](https://github.com/user-attachments/assets/1cf3f0e7-18cf-4318-9ad8-31827dd3459b)
 
 
-![1](https://github.com/user-attachments/assets/cab0b3d2-cca1-4836-aa42-28898e4b550e)
+This initialization block sets up the core components of the tracker:
 
-cv2 (OpenCV): Used for video processing, reading frames, optical flow calculation, and saving images.
-numpy (np): Used for numerical operations (e.g., calculating motion).
-YOLO (ultralytics): YOLOv8 model from the Ultralytics library for detecting Beyblades.
-os: For handling file paths and directories.
-csv: To store results in a CSV file.
-time: Used for tracking the duration of the battle.
-
-YOLO('best.pt'): Loads the YOLO model (replace 'best.pt' with the actual model path). This model is trained to detect Beyblades.
-cv2.VideoCapture(): Opens the video file for frame-by-frame processing.
-
-os.makedirs(output_dir): Checks if the directory for saving images exists. If not, it creates it.
+Loads the YOLO model for Beyblade detection
+Initializes battle state variables for tracking start/end conditions
+Sets up winner tracking variables
+Configures movement tracking with thresholds for stop detection
+Establishes dictionaries for position and stop frame tracking
 
 ---
 
-2) Optical flow initialization and variables, CSV setup :
-
-![2](https://github.com/user-attachments/assets/8986cf67-0891-4565-b467-9ca5516f348e)
+2)  :
 
 
 
-Optical Flow: Used to track the movement of Beyblades by calculating the motion between frames.
-Motion Threshold: If the motion falls below this threshold, the Beyblade is considered stopped.
-Tracking Window: This specifies how many previous frames are considered to determine motion.
+![2](https://github.com/user-attachments/assets/39936b49-33cf-4d03-9681-117605f27485)
 
-CSV File: This stores battle results, including the total spin duration, the winner, and the remaining spin duration of the winning Beyblade.
+
+The movement calculation function:
+
+Computes the Euclidean distance between current and previous positions
+Returns infinity for first detection to prevent false stops
+Uses the Pythagorean theorem to calculate actual pixel distance moved
+
+
+The second function handles battle result storage:
+
+Creates/appends to a CSV file
+Adds headers if file is new
+Formats durations in MM:SS format
+Stores battle duration, winner, end reason, and winner's spin duration
 
 ---
 
@@ -127,7 +132,7 @@ CSV File: This stores battle results, including the total spin duration, the win
 3) Helper functions, optical flow calculation, estimate the remaining spin duration :
 
 
-![3](https://github.com/user-attachments/assets/ca1bfbe1-9697-41d4-99ae-82cf1ff49fb7)
+
 
 
 
