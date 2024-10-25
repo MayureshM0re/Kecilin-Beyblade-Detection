@@ -86,7 +86,7 @@ The mAP50-95 is 0.756 overall, meaning the model is reasonably accurate across a
 
 ---
 
-3) ###Code Logic walkthrough :
+3) ###Code Logic walkthrough### :
 
 ---
 
@@ -251,9 +251,44 @@ The winner_final_duration (remaining spin time of the winner after the battle en
 
 6) 
 
-   
+
+![6](https://github.com/user-attachments/assets/9fda383a-fb93-4cc9-8041-0c85c883ef1d)
 
 
+Initialize Status: The status variable is initially set to "Battle Not Started" to represent the default state before any detection occurs.
+
+Check Battle State:
+
+If self.battle_started is True: This means the battle has started.
+If self.battle_ended is also True: The battle has concluded, so status is updated to indicate that the battle has ended, along with self.battle_end_reason (e.g., which beyblade stopped spinning).
+Else: If the battle has started but not ended, status is updated to "Battle In Progress".
+
+Display Status on Frame:
+cv2.putText is used to draw the status text onto output_frame.
+This overlay provides real-time feedback on the battle’s state for easy visualization in the video output.
+This ensures that each frame of the video contains an updated message about the battle's current status.
+
+---
+7)
+
+
+![7](https://github.com/user-attachments/assets/21412e36-5aa3-466f-8b75-937bc53a4863)
+
+Display Winner and Spin Duration:
+
+Checks if self.battle_ended and self.winner are both defined, indicating that the battle has concluded and there’s a winner.
+Winner Text: Creates a string winner_text to display the winner's name.
+Spin Duration Text:
+If self.winner_final_duration is not None, it means the spin has completely stopped, and this final spin duration is displayed in spin_text.
+Otherwise, calculates the current spin time since the battle ended and stores it in current_spin, updating spin_text to show this ongoing spin time.
+
+out.write(output_frame): Writes the updated frame to the output video file.
+display_frame = self.resize_frame(output_frame): Resizes the frame for better display.
+cv2.imshow('Beyblade Battle Analysis', display_frame): Shows the frame with the battle analysis in a window.
+
+Release Resources:
+
+When the loop ends, releases cap (video capture), out (video writer), and all OpenCV windows with cv2.destroyAllWindows().
 
 
 
