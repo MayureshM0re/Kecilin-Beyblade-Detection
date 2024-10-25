@@ -24,33 +24,26 @@ Optional Pre-requsites (if you wish to train the datasets on your GPU):
 
 
 
-Google Drive Link to Output Video please watch the output  first before running the code to have a better understanding :
+### Google Drive Link to Output Video , Original Video and Datsets for training :
 
  ### 1) Output Video =
       
 https://drive.google.com/file/d/1Ztcj2DGx0dk14RJ7GCmnFF1Gs9pe2ITp/view?usp=drive_link
 
-Google Drive link to the original video :
+
 
 ### 2) Original Video = 
       
 https://drive.google.com/file/d/1s-WQNkZxArbUQHtiqw-n0FsetnbQ3Wj1/view?usp=drive_link
 
-Google drive link to all the datasets :
+
 
 ### 3) Dataset = 
       
 https://drive.google.com/drive/folders/1g14tHUODm5rmkSqffTSxPQVYf0OJ5lf7?usp=drive_link
       
      
-
 ---
-
-Instructions to run my code :
-
-      1) Train.py = it is the code to train the YOLOv8n model
-      
-      2) mainscript.py = it is the main code to detect Beyblades in a video frame and to dtermine the winner and loser between two beyblades 1 v 1 fight and winning beyblade spinning time after winning the game.
 
 Instructions for the outputs :
 
@@ -60,6 +53,15 @@ Instructions for the outputs :
       2) battle_results.csv = It is a CSV file that contains Battle duration ( ins seconds ), Winner name, Battle end reason
       
       3) best.pt = the best.pt is the trained model 
+
+
+
+Instructions to run my code :
+
+      1) Train.py = it is the code to train the YOLOv8n model
+      
+      2) mainscript.py = it is the main code to detect Beyblades in a video frame and to dtermine the winner and loser between two beyblades 1 v 1 fight and winning beyblade spinning time after winning the game.
+
 
 ---
 
